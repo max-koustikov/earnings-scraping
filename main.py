@@ -1,7 +1,10 @@
 #ticker CIK
+from ast import Num
+from matplotlib import ticker
+import yahoo_fin.stock_info as si
 import requests
 import pandas as pd
-final_ticker = 'MTN'
+final_ticker = 'AAPL'
 
 
 import re, requests
@@ -40,26 +43,28 @@ if num_of_zeros == 3:
     CIK = "000" + CIKnum
 
 
-#thor
-#yahoo finance avg estimate
-import yfinance as yf
-ticker = yf.Ticker(final_ticker)
-final_est_eps = ticker.info.get("trailingEps")
-print(final_est_eps)
-
-
-
 import requests
 import pandas as pd
 headers = {'User-Agent': "zachhefferman@gmail.com"}
 tickers_cik = requests.get("https://www.sec.gov/files/company_tickers.json", headers=headers)
 response1 = requests.get("https://data.sec.gov/api/xbrl/companyconcept/CIK" + CIK + "/us-gaap/EarningsPerShareDiluted.json", headers=headers).json()
 final = (response1.get('units').get('USD/shares')[-1].get('val'))
-print(final)
 
 
-if final > final_est_eps:
+aapl_earnings_hist = si.get_earnings_history(final_ticker)
+estimatedEPS = aapl_earnings_hist[4].get('epsestimate')
+print("Estimated:", estimatedEPS)
+
+if final >= (2 * estimatedEPS):
+    final = (response1.get('units').get('USD/shares')[-2].get('val'))
+    print('Reported:', final)
+else:
+    print('Reported:', final)
+
+if final > estimatedEPS:
     print("Opportunity!")
+else:
+    print("No opportunity...")
 
 
 
